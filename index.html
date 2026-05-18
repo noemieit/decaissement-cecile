@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de Décaissement · Cécile Léglise</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;0,800;1,700;1,800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c1:#062e28;--c2:#084d3f;--c3:#0a6e5c;--c4:#0d8c74;--c5:#12b090;--c6:#8dd4c4;
+  --bg:#f2f9f7;--card:#fff;--border:#cde8e1;--text:#062e28;--muted:#4e7d72;
+  --red:#c0392b;--red-bg:#fdf3f2;
+  --gold:#9a6c00;--gold-bg:#fdf8ec;--gold-border:#e8d9a0;
+  --blue:#1a4fa0;--blue-bg:#f0f5ff;
+  --purple:#6d3fa0;--purple-bg:#f5f0ff;--purple-border:#d4b8f0;
+  --ff:'Figtree',system-ui,sans-serif;
+  --fs:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fs);background:var(--bg);color:var(--text);min-height:100vh;padding:48px 40px 80px;}
+
+.hdr{max-width:640px;margin-bottom:32px;}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--c4);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--border);}
+.hdr h1{font-family:var(--ff);font-size:clamp(24px,3.5vw,38px);font-weight:800;line-height:1.08;color:var(--c1);margin-bottom:12px;}
+.hdr h1 em{font-style:italic;color:var(--c5);}
+.hdr p{font-size:13.5px;line-height:1.7;color:var(--muted);}
+
+.hyp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+@media(max-width:700px){.hyp{grid-template-columns:1fr;}}
+.hyp-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;position:relative;overflow:hidden;}
+.hyp-cell::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--hc,var(--c5));}
+.hyp-label{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.hyp-val{font-family:var(--ff);font-size:20px;font-weight:700;color:var(--c1);line-height:1;margin-bottom:3px;}
+.hyp-sub{font-size:11px;color:var(--muted);line-height:1.45;}
+.hyp-cell.dark{background:var(--c2);border-color:var(--c2);}
+.hyp-cell.dark::before{background:var(--c5);}
+.hyp-cell.dark .hyp-label{color:var(--c6);opacity:.65;}
+.hyp-cell.dark .hyp-val{color:#fff;}
+.hyp-cell.dark .hyp-sub{color:var(--c6);opacity:.6;}
+
+.wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+thead tr{border-bottom:2px solid var(--border);background:var(--bg);}
+th{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:12px 16px;text-align:right;color:var(--muted);white-space:nowrap;}
+th:first-child{text-align:left;}
+th.th-pe{color:var(--gold);}
+th.th-lom{color:var(--blue);}
+th.th-av{color:var(--purple);}
+th.th-net{color:var(--c3);font-weight:700;}
+
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-of-type{border-bottom:none;}
+tbody tr:hover{background:var(--bg);}
+td{font-size:13px;padding:15px 16px;text-align:right;white-space:nowrap;vertical-align:middle;}
+td:first-child{text-align:left;}
+
+.yr{font-family:var(--ff);font-size:15px;font-weight:700;color:var(--c2);display:block;}
+.yr-label{font-size:10.5px;color:var(--muted);font-weight:400;display:block;margin-top:1px;}
+
+.badge{display:inline-block;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;font-family:var(--ff);}
+.badge.out{background:var(--red-bg);color:var(--red);border:1px solid #f5c6c0;}
+.badge.in{background:color-mix(in srgb,var(--c5) 10%,white);color:var(--c3);border:1px solid var(--c6);}
+.badge.zero{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.badge.net-neg{background:var(--red-bg);color:var(--red);border:1px solid #f5c6c0;font-size:14px;}
+.badge.av-out{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);}
+
+tr.total-row{background:var(--c2)!important;border-top:2px solid var(--c5)!important;}
+tr.total-row td{padding:18px 16px;}
+tr.total-row .yr{color:#fff;font-size:14px;}
+tr.total-row .yr-label{color:var(--c6);opacity:.7;}
+
+.footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:600px){.footer{grid-template-columns:1fr;}}
+.fc{border-radius:13px;padding:20px 22px;}
+.fc.n{background:var(--card);border:1px solid var(--border);}
+.fc.dark{background:var(--c2);}
+.fc.light{background:color-mix(in srgb,var(--c5) 8%,white);border:1px solid var(--c6);}
+.fc-tag{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.fc.n .fc-tag,.fc.light .fc-tag{color:var(--muted);}
+.fc.dark .fc-tag{color:var(--c6);opacity:.65;}
+.fc-val{font-family:var(--ff);font-size:26px;font-weight:800;line-height:1;margin-bottom:4px;}
+.fc.n .fc-val{color:var(--c1);}
+.fc.dark .fc-val{color:#fff;}
+.fc.light .fc-val{color:var(--c3);}
+.fc-sub{font-size:11px;}
+.fc.n .fc-sub,.fc.light .fc-sub{color:var(--muted);}
+.fc.dark .fc-sub{color:var(--c6);opacity:.6;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="eyebrow">Simulation patrimoniale · Cécile Léglise</div>
+  <h1>Tableau de décaissement<br><em>sur 5 ans</em></h1>
+  <p>Ce tableau présente les flux de trésorerie annuels liés à votre stratégie d'investissement : appels de fonds annuels, frais d'entrée, premières distributions reçues à partir de l'an 4, sortie des anciennes assurances-vie ainsi que les intérêts du crédit lombard à servir chaque année.</p>
+</div>
+
+<!-- HYPOTHÈSES -->
+<div class="hyp">
+  <div class="hyp-cell" style="--hc:var(--gold)">
+    <div class="hyp-label">PE Altaroc · Engagement total</div>
+    <div class="hyp-val">200 000 €</div>
+    <div class="hyp-sub">Frais entrée 5 % = −5 000 €<br>Appels 20 k€/an · An 1 → An 5</div>
+  </div>
+  <div class="hyp-cell" style="--hc:var(--blue)">
+    <div class="hyp-label">Crédit Lombard · Taux 3,2 %</div>
+    <div class="hyp-val">~290 000 €</div>
+    <div class="hyp-sub">Intérêts annuels ~9 280 €<br>Capital remboursé in fine</div>
+  </div>
+  <div class="hyp-cell dark">
+    <div class="hyp-label">Capital total AV Lux</div>
+    <div class="hyp-val">790 000 €</div>
+    <div class="hyp-sub">500 k€ apportés + 290 k€ lombard<br>Base capitalisable · 8,9 %/an moy.</div>
+  </div>
+</div>
+
+<!-- TABLEAU -->
+<div class="wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Période</th>
+        <th class="th-pe">Appel PE<br><span style="font-weight:400;opacity:.75">Altaroc</span></th>
+        <th class="th-pe">Frais<br><span style="font-weight:400;opacity:.75">entrée 5 %</span></th>
+        <th class="th-pe">Distribution<br><span style="font-weight:400;opacity:.75">reçue</span></th>
+        <th class="th-av">Sortie<br><span style="font-weight:400;opacity:.75">anciennes AV</span></th>
+        <th class="th-lom">Intérêts<br><span style="font-weight:400;opacity:.75">Lombard 3,2 %</span></th>
+        <th class="th-net">Flux net<br><span style="font-weight:400;opacity:.75">de l'année</span></th>
+        <th class="th-net">Flux cumulé</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td><span class="yr">An 1 · 2027</span><span class="yr-label">1er appel de fonds</span></td>
+        <td><span class="badge out">−20 000 €</span></td>
+        <td><span class="badge out">−5 000 €</span><br><span style="font-size:10px;color:var(--muted)">frais souscription</span></td>
+        <td><span class="badge zero">0 €</span><br><span style="font-size:10px;color:var(--muted)">période d'investissement</span></td>
+        <td><span class="badge av-out">−37 963 €</span><br><span style="font-size:10px;color:var(--muted)">rachat / clôture AV</span></td>
+        <td><span class="badge out">−9 280 €</span></td>
+        <td><span class="badge net-neg">−72 243 €</span></td>
+        <td style="color:var(--red);font-weight:600">−72 243 €</td>
+      </tr>
+
+      <tr>
+        <td><span class="yr">An 2 · 2028</span><span class="yr-label">2ème appel de fonds</span></td>
+        <td><span class="badge out">−20 000 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge zero">0 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge out">−9 280 €</span></td>
+        <td><span class="badge net-neg">−29 280 €</span></td>
+        <td style="color:var(--red);font-weight:600">−101 523 €</td>
+      </tr>
+
+      <tr>
+        <td><span class="yr">An 3 · 2029</span><span class="yr-label">3ème appel de fonds</span></td>
+        <td><span class="badge out">−20 000 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge zero">0 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge out">−9 280 €</span></td>
+        <td><span class="badge net-neg">−29 280 €</span></td>
+        <td style="color:var(--red);font-weight:600">−130 803 €</td>
+      </tr>
+
+      <tr>
+        <td><span class="yr">An 4 · 2030</span><span class="yr-label">4ème appel + premières distributions</span></td>
+        <td><span class="badge out">−20 000 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge in">+10 000 €</span><br><span style="font-size:10px;color:var(--muted)">premières distributions</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge out">−9 280 €</span></td>
+        <td><span class="badge net-neg">−19 280 €</span></td>
+        <td style="color:var(--red);font-weight:600">−150 083 €</td>
+      </tr>
+
+      <tr>
+        <td><span class="yr">An 5 · 2031</span><span class="yr-label">Dernier appel + distributions</span></td>
+        <td><span class="badge out">−20 000 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge in">+10 000 €</span></td>
+        <td><span class="badge zero">—</span></td>
+        <td><span class="badge out">−9 280 €</span></td>
+        <td><span class="badge net-neg">−19 280 €</span></td>
+        <td style="color:var(--red);font-weight:600">−169 363 €</td>
+      </tr>
+
+      <tr class="total-row">
+        <td>
+          <span class="yr">Bilan 5 ans</span>
+          <span class="yr-label">Hors remboursement lombard in fine</span>
+        </td>
+        <td style="color:#f0c040;font-family:var(--ff);font-weight:700">−100 000 €</td>
+        <td style="color:var(--red);font-family:var(--ff);font-weight:700">−5 000 €</td>
+        <td style="color:var(--c5);font-family:var(--ff);font-weight:700">+20 000 €</td>
+        <td style="color:#c9a0f0;font-family:var(--ff);font-weight:700">−37 963 €</td>
+        <td style="color:var(--red);font-family:var(--ff);font-weight:700">−46 400 €</td>
+        <td>
+          <span class="badge net-neg" style="font-size:15px">−169 363 €</span>
+          <span class="yr-label" style="color:var(--c6);margin-top:3px">flux nets cumulés</span>
+        </td>
+        <td style="color:var(--c6);font-family:var(--ff);font-size:13px;font-weight:600">pic à l'An 5<br>avant distributions</td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="fc n">
+    <div class="fc-tag">Total décaissé sur 5 ans</div>
+    <div class="fc-val" style="color:var(--red)">189 363 €</div>
+    <div class="fc-sub">100k appels + 5k frais + 46,4k intérêts + 37,9k sorties AV</div>
+  </div>
+  <div class="fc dark">
+    <div class="fc-tag">Total distributions reçues</div>
+    <div class="fc-val">+20 000 €</div>
+    <div class="fc-sub">Premiers retours An 4 et An 5 · Les distributions s'accélèrent à partir de l'an 6</div>
+  </div>
+  <div class="fc light">
+    <div class="fc-tag">Décaissement maximum net</div>
+    <div class="fc-val" style="color:var(--red)">−169 363 €</div>
+    <div class="fc-sub">Pic atteint à l'An 5 · Avant retour accéléré des distributions</div>
+  </div>
+</div>
+
+</body>
+</html>
